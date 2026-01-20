@@ -4,6 +4,7 @@ from sqlalchemy import select
 from database.database import get_db
 from passlib.context import CryptContext
 from models.users_model import User, UserSignUp, UserUpdate, UserOut
+from sqlalchemy import any_
 from models.sucursales_model import Sucursal, SucursalCreate, SucursalUpdate, SucursalOut
 from models.user_roles_model import UserRole, UserRoleCreate, UserRoleOut
 
@@ -112,10 +113,35 @@ async def user_signup(user: UserSignUp, db: AsyncSession = Depends(get_db)):
         )
     
 @router.get("/all", response_model=list[UserOut])
-async def get_all_users(db: AsyncSession = Depends (get_db)):
-
+async def get_all_users(
+    usuario: str | None = None,
+    sucursal_id: int | None = None,
+    rol_id: int | None = None,
+    activos: bool | None = None,
+    db: AsyncSession = Depends(get_db)
+):
     try:
         query = select(User)
+        
+        # Aplicar filtros opcionales
+        if usuario:
+            query = query.where(
+                (User.usuario.ilike(f"%{usuario}%")) | 
+                (User.nombres.ilike(f"%{usuario}%")) |
+                (User.apellidos.ilike(f"%{usuario}%"))
+            )
+        
+        if sucursal_id:
+            # Filtrar usuarios que tengan acceso a esta sucursal
+            query = query.where(sucursal_id == any_(User.sucursal_acces))
+        
+        if rol_id:
+            # Filtrar usuarios que tengan este rol
+            query = query.where(rol_id == any_(User.roles))
+        
+        # Para filtrar activos necesitarías un campo is_active en el modelo
+        # o hacer join con user_roles para verificar si tienen roles activos
+        
         result = await db.execute(query)
         users = result.scalars().all()
         return users

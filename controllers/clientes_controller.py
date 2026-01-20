@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from database.database import get_db
 from models.clientes_model import Cliente, CreateCliente, ClienteOut, ClienteUpdate
 from models.tipo_cliente_model import Tipo_Cliente
@@ -86,6 +86,17 @@ async def get_all_clientes(db: AsyncSession = Depends(get_db)):
             status_code=500,
             detail="Error interno del servidor"
         )
+
+@router.get("/search")
+async def search_clientes(cliente: str, db: AsyncSession = Depends(get_db)):
+    query = select(Cliente).where(
+        or_(
+            Cliente.nombres.ilike(f"%{cliente}%"),
+            Cliente.apellidos.ilike(f"%{cliente}%")
+        )
+    ).limit(10)  # Limitar resultados
+    result = await db.execute(query)
+    return result.scalars().all()
     
 @router.get("/{cliente_id}", response_model=ClienteOut)
 async def get_cliente(cliente_id: int, db: AsyncSession = Depends(get_db)):

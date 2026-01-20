@@ -73,7 +73,7 @@ async def create_sucursal(sucursal: SucursalCreate, db: AsyncSession = Depends(g
 async def get_all_sucursales(db: AsyncSession = Depends(get_db)):
 
     try:
-        query = select(Sucursal)
+        query = select(Sucursal).order_by(Sucursal.sucursal)
         result = await db.execute(query)
         sucursales = result.scalars().all()
         return sucursales

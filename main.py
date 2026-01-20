@@ -4,7 +4,7 @@ from database.database import engine, Base
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from routes import opticaroutes
-from controllers import users_controller, estado_sucursal_controller, tipo_sucursal_controller, sucursales_controller, users_roles_contoller, tipo_cliente_controller, clientes_controller
+from controllers import users_controller, estado_sucursal_controller, tipo_sucursal_controller, sucursales_controller, users_roles_contoller, tipo_cliente_controller, clientes_controller, pacientes_controller, armazon_controler, servicio_controller, material_controller
 
 app = FastAPI()
 
@@ -54,6 +54,10 @@ app.include_router(sucursales_controller.router)
 app.include_router(users_roles_contoller.router)
 app.include_router(tipo_cliente_controller.router)
 app.include_router(clientes_controller.router)
+app.include_router(pacientes_controller.router)
+app.include_router(armazon_controler.router)
+app.include_router(servicio_controller.router)
+app.include_router(material_controller.router)
 @app.get("/")
 async def root():
     return {"message": "FastAPI + PostgresSQL funcionan!"}
